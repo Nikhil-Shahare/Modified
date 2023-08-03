@@ -2,14 +2,14 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
-
+import{onDocumentCreated} from "firebase/functions"
 const firebaseConfig = {
-  apiKey: "AIzaSyCdi5treffChLazacS4eBgbeeYCc3_9BK8",
-  authDomain: "test-3be97.firebaseapp.com",
-  projectId: "test-3be97",
-  storageBucket: "test-3be97.appspot.com",
-  messagingSenderId: "727754026767",
-  appId: "1:727754026767:web:4c151fe903133da246187a"
+  apiKey: "AIzaSyBuJlJ0ssjtMHj42LU7BIV68l6doDz0EAM",
+  authDomain: "messenger-9a7c5.firebaseapp.com",
+  projectId: "messenger-9a7c5",
+  storageBucket: "messenger-9a7c5.appspot.com",
+  messagingSenderId: "26404425142",
+  appId: "1:26404425142:web:8343da1cfd9400d94d0517"
 };
 
 // Initialize Firebase
