@@ -1,4 +1,4 @@
-import { getDocs, collection } from "firebase/firestore";
+import { getDocs, collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import React, { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../context/ChatContext";
 import { db } from "../firebase";
@@ -9,17 +9,20 @@ const Messages = () => {
   const { data } = useContext(ChatContext);
 
   useEffect(() => {
-    const getChats = async () => {
-      const querySnapshot = await getDocs(collection(db, `chats/${data.chatId}/messages`));
-      console.log( `chats/${data.chatId}/messages`)
-      const messageData = querySnapshot.docs.map((doc) => doc.data());
-      setMessages(messageData);
-    };
+    const chatId = data.chatId;
+    const q =  query(collection(db, `chats/${chatId}/messages`),orderBy("date", "asc"));
 
-    getChats(); // Call the function to fetch and set the chat data.
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const messageData = snapshot.docs.map((doc) => doc.data());
+      // Set the state with the new array of document data
+      setMessages(messageData);
+    });
+
+    // Return the unsubscribe function to stop listening when the component unmounts
+    return () => unsubscribe();
   }, [data.chatId]);
 
-  console.log("this is for messages",messages);
+  console.log("this is for messages", messages);
 
   return (
     <div className="messages">
