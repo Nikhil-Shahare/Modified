@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signInWithPopup,GoogleAuthProvider } from "firebase/auth";
 import { auth,db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc,getDoc,onSnapshot } from "firebase/firestore";
 
 
 
@@ -24,8 +24,18 @@ const Login = () => {
             email:userCred.user.email,
             photoURL: userCred.user.photoURL,
           });
-
-       await setDoc(doc(db, "userChats", userCred.user.uid), {});
+           // Check if the "userChats" document already exists
+           try {
+            const res = await getDoc(doc(db, "userChats", userCred.user.uid));
+      
+            if (!res.exists()) {
+              //create a chat in chats collection
+              await setDoc(doc(db, "userChats", userCred.user.uid), {});
+      
+            }}catch (err) {
+              console.log("user chat creation error",err);
+            }
+      //  await setDoc(doc(db, "userChats", userCred.user.uid), {});
       navigate("/home")
     } catch (err) {
       setErr(true);
@@ -34,8 +44,8 @@ const Login = () => {
   return (
     <div className="formContainer">
       <div className="formWrapper">
-        <span className="logo">Lama Chat</span>
-        <span className="title">Login</span>
+        <span className="logo">Design Dekhrekh</span>
+        {/* <span className="title">Login</span> */}
        <button onClick={handleSubmit}>
         sign in with google
        </button>
