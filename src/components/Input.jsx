@@ -1,19 +1,14 @@
 import React, { useContext, useState } from "react";
-import { Firestore, getFirestore } from "firebase/firestore";
 import Img from "../img/img.png";
 import Attach from "../img/attach.png";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import {
-  arrayUnion,
   doc,
   serverTimestamp,
-  Timestamp,
-  updateDoc,
   setDoc,
-  getDoc,
   collection,
-  addDoc
+  writeBatch,
 } from "firebase/firestore";
 import { db, storage } from "../firebase";
 import { v4 as uuid } from "uuid";
@@ -22,86 +17,81 @@ import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 const Input = () => {
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
-  
+
   const handleSend = async () => {
-    const docRef = await collection(db, `chats/${data.chatId}/messages`)
-    if (img) {
-      const storageRef = ref(storage, uuid());
-      setText("you recieved an image")
-      const uploadTask = uploadBytesResumable(storageRef, img);
+    try {
+      const docRef = doc(collection(db, `chats/${data.chatId}/messages`));
 
-      uploadTask.on(
-        (error) => {
-          //TODO:Handle Error
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            await setDoc(doc(docRef), {
+      if (img) {
+        setUploading(true);
+        const storageRef = ref(storage, uuid());
+        const uploadTask = uploadBytesResumable(storageRef, img);
 
-                id: uuid(),
-                senderId: currentUser.uid,
-                date: Timestamp.now(),
-                img: downloadURL,
-                text,
-            
-            });
-          });
-        }
-      );
-    } else {
-      try {
-        
-        await setDoc(doc(docRef), {       
-            id: uuid(),
-            text,
-            senderId: currentUser.uid,
-            date: Timestamp.now(),
-        });
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            setUploading(false);
+            console.error("Error uploading image:", error);
+          },
+          async () => {
+            setUploading(false);
+            setUploadProgress(0);
 
-      //  getFirestore().collection('chats').doc(data.chatId).collection('messages').add(
-      //     { id: uuid(),
-      //           text,
-      //           senderId: currentUser.uid,
-      //           date: Timestamp.now(),}
-      //     );
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
+            const message = {
+              _id: uuid(),
+              sentBy: currentUser.uid,
+              sentTo: data.user.uid,
+              createdAt: serverTimestamp(),
+              img: downloadURL,
+              text,
+            };
 
+            await setDoc(docRef, message);
+          }
+        );
+      } else {
+        const message = {
+          _id: uuid(),
+          sentBy: currentUser.uid,
+          sentTo: data.user.uid,
+          createdAt: serverTimestamp(),
+          text,
+        };
 
-
-      // const collectionRef = await collection(db,`chats/${data.chatid}/messages`)
-      // await collectionRef.add( {       
-      //       id: uuid(),
-      //       text,
-      //       senderId: currentUser.uid,
-      //       date: Timestamp.now(),
-      //   })      
-
-
-      } catch (error) {
-        console.log("this is input error",error)
+        await setDoc(docRef, message);
       }
+
+      const batch = writeBatch(db);
+      const userChatsRef1 = doc(db, "userChats", currentUser.uid);
+      const userChatsRef2 = doc(db, "userChats", data.user.uid);
+      batch.update(userChatsRef1, {
+        [data.chatId + ".lastMessage"]: { text },
+        [data.chatId + ".date"]: serverTimestamp(),
+      });
+      batch.update(userChatsRef2, {
+        [data.chatId + ".lastMessage"]: { text },
+        [data.chatId + ".date"]: serverTimestamp(),
+      });
+      await batch.commit();
+
+      setText("");
+      setImg(null);
+    } catch (error) {
+      console.error("Error sending message:", error);
     }
-
-    await updateDoc(doc(db, "userChats", currentUser.uid), {
-      [data.chatId + ".lastMessage"]: {
-        text,
-      },
-      [data.chatId + ".date"]: serverTimestamp(),
-    });
-
-    await updateDoc(doc(db, "userChats", data.user.uid), {
-      [data.chatId + ".lastMessage"]: {
-        text,
-      },
-      [data.chatId + ".date"]: serverTimestamp(),
-    });
-
-    setText("");
-    setImg(null);
   };
+
   return (
     <div className="input">
       <input
@@ -111,7 +101,6 @@ const Input = () => {
         value={text}
       />
       <div className="send">
-        <img src={Attach} alt="" />
         <input
           type="file"
           style={{ display: "none" }}
@@ -123,6 +112,7 @@ const Input = () => {
         </label>
         <button onClick={handleSend}>Send</button>
       </div>
+      {uploading && <div>{uploadProgress.toFixed(1)}% uploaded</div>}
     </div>
   );
 };

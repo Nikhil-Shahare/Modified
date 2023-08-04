@@ -53,8 +53,6 @@ const Search = () => {
         //create a chat in chats collection
         try {
           
-          await setDoc(doc(db, "chats", combinedId),{messages:[]});
-          await setDoc(doc(db,`chats/${combinedId}/messages`,"demo"),{trial:[]})
         } catch (error) {
           console.log("this sis acollection error",error)
         }

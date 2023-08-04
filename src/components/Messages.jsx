@@ -10,7 +10,7 @@ const Messages = () => {
 
   useEffect(() => {
     const chatId = data.chatId;
-    const q =  query(collection(db, `chats/${chatId}/messages`),orderBy("date", "asc"));
+    const q =  query(collection(db, `chats/${chatId}/messages`),orderBy("createdAt", "asc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const messageData = snapshot.docs.map((doc) => doc.data());
