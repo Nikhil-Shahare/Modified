@@ -2,15 +2,17 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
-import{onDocumentCreated} from "firebase/functions"
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBuJlJ0ssjtMHj42LU7BIV68l6doDz0EAM",
-  authDomain: "messenger-9a7c5.firebaseapp.com",
-  projectId: "messenger-9a7c5",
-  storageBucket: "messenger-9a7c5.appspot.com",
-  messagingSenderId: "26404425142",
-  appId: "1:26404425142:web:8343da1cfd9400d94d0517"
+  apiKey: "AIzaSyBD8xkMN0iesz7fYVU8yzx_nuW3Ii7eZ_8",
+  authDomain: "designer-dekhrekh.firebaseapp.com",
+  databaseURL: "https://designer-dekhrekh-default-rtdb.firebaseio.com",
+  projectId: "designer-dekhrekh",
+  storageBucket: "designer-dekhrekh.appspot.com",
+  messagingSenderId: "679119629602",
+  appId: "1:679119629602:web:64301e7d42bc360446497b"
 };
+
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
