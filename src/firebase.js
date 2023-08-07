@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: "designer-dekhrekh",
   storageBucket: "designer-dekhrekh.appspot.com",
   messagingSenderId: "679119629602",
-  appId: "1:679119629602:web:64301e7d42bc360446497b"
+  appId: "1:679119629602:web:e23757b4395bcd7746497b"
 };
 
 

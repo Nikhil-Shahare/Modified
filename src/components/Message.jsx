@@ -14,18 +14,21 @@ const Message = ({ message }) => {
   }, [message]);
 
   const getFormattedDateTime = (timestamp) => {
+    if (!timestamp) {
+      return 'just now'; // Return an empty string or a default value if timestamp is null
+    }
     return formatDistanceToNow(timestamp.toDate(), { addSuffix: true });
   };
 
   return (
     <div
       ref={ref}
-      className={`message ${message.senderId === currentUser.uid && "owner"}`}
+      className={`message ${message.sentBy === currentUser.uid && "owner"}`}
     >
       <div className="messageInfo">
         <img
           src={
-            message.senderId === currentUser.uid
+            message.sentBy === currentUser.uid
               ? currentUser.photoURL
               : data.user.photoURL
           }

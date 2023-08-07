@@ -10,6 +10,8 @@ const Messages = () => {
 
   useEffect(() => {
     const chatId = data.chatId;
+
+    console.log("this is data.chatId",chatId)
     const q =  query(collection(db, `chats/${chatId}/messages`),orderBy("createdAt", "asc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -27,7 +29,7 @@ const Messages = () => {
   return (
     <div className="messages">
       {messages.map((m) => (
-        <Message message={m} key={m.id} />
+        <Message message={m} key={m._id} />
       ))}
     </div>
   );
